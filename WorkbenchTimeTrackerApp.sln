@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35118.90
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkbenchTimeTrackerApp.Server", "WorkbenchTimeTrackerApp.Server\WorkbenchTimeTrackerApp.Server.csproj", "{C5EE676E-7053-4040-9746-B0155794EA8A}"
+EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "workbenchtimetrackerapp.client", "workbenchtimetrackerapp.client\workbenchtimetrackerapp.client.esproj", "{92953C26-3715-491D-9B67-45ADF67D9444}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C5EE676E-7053-4040-9746-B0155794EA8A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C5EE676E-7053-4040-9746-B0155794EA8A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C5EE676E-7053-4040-9746-B0155794EA8A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C5EE676E-7053-4040-9746-B0155794EA8A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{92953C26-3715-491D-9B67-45ADF67D9444}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{92953C26-3715-491D-9B67-45ADF67D9444}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{92953C26-3715-491D-9B67-45ADF67D9444}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{92953C26-3715-491D-9B67-45ADF67D9444}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{92953C26-3715-491D-9B67-45ADF67D9444}.Release|Any CPU.Build.0 = Release|Any CPU
+		{92953C26-3715-491D-9B67-45ADF67D9444}.Release|Any CPU.Deploy.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8D8C6F82-BFAB-42B5-9FCF-39EB225F1F64}
+	EndGlobalSection
+EndGlobal
