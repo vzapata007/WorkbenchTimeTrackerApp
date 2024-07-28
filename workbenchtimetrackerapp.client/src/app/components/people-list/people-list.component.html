@@ -1,0 +1,20 @@
+<div *ngIf="errorMessage" class="alert alert-danger">
+    {{ errorMessage }}
+</div>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Full Name</th>
+            <th>Work Tasks</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr *ngFor="let person of people">
+            <td>{{ person.id }}</td>
+            <td>{{ person.fullName }}</td>
+            <td>{{ person.workTasks.length }}</td>
+        </tr>
+    </tbody>
+</table>

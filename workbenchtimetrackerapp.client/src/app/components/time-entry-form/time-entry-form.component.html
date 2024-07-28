@@ -1,0 +1,30 @@
+<div class="container mt-4">
+    <h2>Add Time Entry</h2>
+    <form (ngSubmit)="onSubmit()" #timeEntryForm="ngForm">
+        <div class="form-group">
+            <label for="entryDateTime">Entry Date Time</label>
+            <input type="datetime-local"
+                   id="entryDateTime"
+                   class="form-control"
+                   name="entryDateTime"
+                   [(ngModel)]="timeEntry.entryDateTime"
+                   required />
+        </div>
+
+        <div class="form-group">
+            <label for="person">Person</label>
+            <select id="person" class="form-control" name="personId" [(ngModel)]="timeEntry.personId" required>
+                <option *ngFor="let person of people" [value]="person.id">{{ person.fullName }}</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="workTask">Work Task</label>
+            <select id="workTask" class="form-control" name="workTaskId" [(ngModel)]="timeEntry.workTaskId" required>
+                <option *ngFor="let task of workTasks" [value]="task.id">{{ task.name }}</option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+</div>

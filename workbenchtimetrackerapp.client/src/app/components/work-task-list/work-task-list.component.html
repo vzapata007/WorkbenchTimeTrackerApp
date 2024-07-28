@@ -1,0 +1,17 @@
+<!-- Main Container -->
+<div class="container mt-4">
+    <!-- Work Tasks Section -->
+    <h2 class="mb-4">Work Tasks</h2>
+    <div *ngIf="workTasks.length; else noData">
+        <ul class="list-group">
+            <li *ngFor="let task of workTasks" class="list-group-item">
+                {{ task.name }} - {{ task.description }}
+            </li>
+        </ul>
+    </div>
+    <ng-template #noData>
+        <div class="alert alert-warning" role="alert">
+            No work tasks found.
+        </div>
+    </ng-template>
+</div>

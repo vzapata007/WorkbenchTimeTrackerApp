@@ -1,0 +1,17 @@
+<!-- Main Container -->
+<div class="container mt-4">
+    <!-- Time Entries Section -->
+    <h2 class="mb-4">Time Entries</h2>
+    <div *ngIf="timeEntries.length; else noData">
+        <ul class="list-group">
+            <li *ngFor="let entry of timeEntries" class="list-group-item">
+                {{ entry.entryDateTime }} - Person {{ entry.personId }}, Task {{ entry.workTaskId }}
+            </li>
+        </ul>
+    </div>
+    <ng-template #noData>
+        <div class="alert alert-warning" role="alert">
+            No time entries found.
+        </div>
+    </ng-template>
+</div>
