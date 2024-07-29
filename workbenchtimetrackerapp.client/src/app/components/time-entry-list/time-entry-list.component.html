@@ -15,8 +15,8 @@
         <tbody>
             <tr *ngFor="let entry of timeEntries">
                 <td>{{ entry.entryDateTime | date:'short' }}</td>
-                <td>{{ getPersonName(entry.personId) }}</td>
-                <td>{{ getWorkTaskName(entry.workTaskId) }}</td>
+                <td>{{ entry.personFullName }}</td>
+                <td>{{ entry.workTaskName }}</td>
                 <td>
                     <button class="btn btn-sm btn-primary mr-2" (click)="editEntry(entry)">Edit</button>
                     <button class="btn btn-sm btn-danger" *ngIf="entry.id !== undefined" (click)="deleteEntry(entry.id)">Delete</button>

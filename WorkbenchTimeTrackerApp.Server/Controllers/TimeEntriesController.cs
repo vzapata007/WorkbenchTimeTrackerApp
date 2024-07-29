@@ -73,8 +73,19 @@ namespace WorkbenchTimeTrackerApp.Server.Controllers
             _context.TimeEntries.Add(timeEntry);
             await _context.SaveChangesAsync();
 
-            timeEntryDto.Id = timeEntry.Id;
-            return CreatedAtAction(nameof(GetTimeEntry), new { id = timeEntry.Id }, timeEntryDto);
+            // Retrieve additional information
+            var person = await _context.People.FindAsync(timeEntry.PersonId);
+            var workTask = await _context.WorkTasks.FindAsync(timeEntry.WorkTaskId);
+
+            var result = new TimeEntryDTO
+            {
+                Id = timeEntry.Id,
+                EntryDateTime = timeEntry.EntryDateTime,
+                PersonFullName = person?.FullName,   // Ensure PersonFullName is available
+                WorkTaskName = workTask?.Name        // Ensure WorkTaskName is available
+            };
+
+            return CreatedAtAction(nameof(GetTimeEntry), new { id = timeEntry.Id }, result);
         }
 
         // PUT: api/timeentries/{id}
@@ -116,6 +127,33 @@ namespace WorkbenchTimeTrackerApp.Server.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
+        }
+
+        // GET: api/TimeEntries/person/1
+        [HttpGet("person/{personId}")]
+        public async Task<ActionResult<IEnumerable<TimeEntryDTO>>> GetTimeEntriesByPersonId(int personId)
+        {
+            var timeEntries = await _context.TimeEntries
+                .Where(te => te.PersonId == personId)
+                .Include(te => te.WorkTask)
+                .Include(te => te.Person)
+                .Select(te => new TimeEntryDTO
+                {
+                    Id = te.Id,
+                    EntryDateTime = te.EntryDateTime,
+                    PersonId = te.PersonId,
+                    PersonFullName = te.Person.FullName,
+                    WorkTaskId = te.WorkTaskId,
+                    WorkTaskName = te.WorkTask.Name
+                })
+                .ToListAsync();
+
+            if (timeEntries == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(timeEntries);
         }
     }
 }

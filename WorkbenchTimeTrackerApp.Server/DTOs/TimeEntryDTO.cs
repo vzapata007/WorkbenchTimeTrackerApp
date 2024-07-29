@@ -12,9 +12,11 @@ namespace WorkbenchTimeTrackerApp.Server.DTOs
 
         [Required(ErrorMessage = "PersonId is required.")]
         public int PersonId { get; set; }
+        public string? PersonFullName { get; set; }
 
         [Required(ErrorMessage = "WorkTaskId is required.")]
         public int WorkTaskId { get; set; }
+        public string? WorkTaskName { get; set; }
 
     }
 }

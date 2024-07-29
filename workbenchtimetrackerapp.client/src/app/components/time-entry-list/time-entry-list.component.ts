@@ -5,10 +5,6 @@ import { TimeEntry } from '../../models/time-entry.model';
 import { TimeEntryService } from '../../services/time-entry.service';
 import { SharedService } from '../../services/shared.service';
 import { TimeEntryFormComponent } from '../time-entry-form/time-entry-form.component';
-import { PeopleService } from '../../services/people.service';
-import { WorkTaskService } from '../../services/work-task.service';
-import { Person } from '../../models/person.model';
-import { WorkTask } from '../../models/work-task.model';
 
 @Component({
   selector: 'app-time-entry-list',
@@ -16,122 +12,94 @@ import { WorkTask } from '../../models/work-task.model';
   styleUrls: ['./time-entry-list.component.css']
 })
 export class TimeEntryListComponent implements OnInit, OnDestroy {
-  timeEntries: TimeEntry[] = []; // List of time entries for the selected person
-  personSubscription: Subscription = new Subscription(); // Subscription to track selected person changes
-  selectedPersonId: number | null = null; // ID of the currently selected person
-  personNames: { [key: number]: string } = {}; // Cache for person names
-  taskNames: { [key: number]: string } = {}; // Cache for work task names
+  timeEntries: TimeEntry[] = []; // List of time entries to display
+  personSubscription: Subscription = new Subscription(); // Subscription to the shared service for person changes
+  selectedPersonId: number | null = null; // Currently selected person's ID
 
   constructor(
-    private timeEntryService: TimeEntryService,
-    private modalService: NgbModal,
-    private sharedService: SharedService,
-    private peopleService: PeopleService,
-    private workTaskService: WorkTaskService
+    private timeEntryService: TimeEntryService, // Service for time entry operations
+    private modalService: NgbModal, // Service for handling modals
+    private sharedService: SharedService // Service for shared state, including selected person
   ) { }
 
   ngOnInit(): void {
-    // Subscribe to the selected person and load time entries when the person changes
+    // Subscribe to the selected person observable from the shared service
     this.personSubscription = this.sharedService.selectedPerson$.subscribe(person => {
       if (person && person.id !== undefined) {
-        this.selectedPersonId = person.id;
-        this.loadTimeEntries(person.id);
+        this.selectedPersonId = person.id; // Set the selected person's ID
+        this.loadTimeEntries(person.id); // Load time entries for the selected person
       } else {
-        this.selectedPersonId = null;
-        this.timeEntries = [];
+        this.selectedPersonId = null; // No person selected
+        this.timeEntries = []; // Clear the time entries list
       }
     });
   }
 
   ngOnDestroy(): void {
-    // Clean up subscription to avoid memory leaks
+    // Unsubscribe from the person observable to prevent memory leaks
     this.personSubscription.unsubscribe();
   }
 
   loadTimeEntries(personId: number): void {
-    // Fetch time entries for the selected person
+    // Fetch time entries for the given person ID
     this.timeEntryService.getTimeEntriesByPersonId(personId).subscribe(entries => {
-      this.timeEntries = entries.filter(entry => entry.personId === personId);
-      this.loadNames();
+      this.timeEntries = entries; // Update the time entries list
     });
-  }
-
-  loadNames(): void {
-    // Load and cache person and task names
-    this.timeEntries.forEach(entry => {
-      if (!this.personNames[entry.personId]) {
-        this.peopleService.getPerson(entry.personId).subscribe(person => {
-          this.personNames[entry.personId] = person.fullName;
-        });
-      }
-      if (!this.taskNames[entry.workTaskId]) {
-        this.workTaskService.getWorkTask(entry.workTaskId).subscribe(task => {
-          this.taskNames[entry.workTaskId] = task.name;
-        });
-      }
-    });
-  }
-
-  getPersonName(personId: number): string {
-    // Return cached person name or 'Loading...' if not available
-    return this.personNames[personId] || 'Loading...';
-  }
-
-  getWorkTaskName(workTaskId: number): string {
-    // Return cached work task name or 'Loading...' if not available
-    return this.taskNames[workTaskId] || 'Loading...';
   }
 
   addEntry(): void {
     if (this.selectedPersonId !== null) {
-      // Open modal to add a new time entry
+      // Open the TimeEntryFormComponent modal for adding a new entry
       const modalRef = this.modalService.open(TimeEntryFormComponent);
       modalRef.componentInstance.timeEntry = { entryDateTime: new Date(), personId: this.selectedPersonId, workTaskId: 0 } as TimeEntry;
+
       modalRef.result.then((result) => {
         if (result) {
+          // Add the new time entry if modal result is successful
           this.timeEntryService.addTimeEntry(result).subscribe((newEntry) => {
-            // Add the new entry to the list and update names
-            this.timeEntries.push(newEntry);
-            this.loadNames();
+            // Refresh the time entries list
+            this.loadTimeEntries(this.selectedPersonId as number); 
           });
         }
       }).catch((error) => {
-        console.log('Modal dismissed', error);
+        console.log('Modal dismissed', error); 
       });
     }
   }
 
   editEntry(entry: TimeEntry): void {
-    // Open modal to edit an existing time entry
+    // Open the TimeEntryFormComponent modal for editing an existing entry
     const modalRef = this.modalService.open(TimeEntryFormComponent);
-    modalRef.componentInstance.timeEntry = { ...entry }; // Pass a copy of the entry to avoid modifying the original
+    modalRef.componentInstance.timeEntry = { ...entry }; // Pass the entry to edit
+
     modalRef.result.then((result) => {
       if (result) {
         if (result.id !== entry.id) {
-          console.error('Mismatched ID during update');
+          console.error('Mismatched ID during update'); 
           return;
         }
+        // Update the time entry if modal result is successful
         this.timeEntryService.updateTimeEntry(result).subscribe(() => {
-          if (this.selectedPersonId !== null) {
-            this.loadTimeEntries(this.selectedPersonId); // Reload time entries after update
-          }
+          // Refresh the time entries list
+          this.loadTimeEntries(this.selectedPersonId as number); 
         });
       }
     }).catch((error) => {
-      console.log('Modal dismissed', error);
+      console.log('Modal dismissed', error); 
     });
   }
 
   deleteEntry(id?: number): void {
     if (id !== undefined) {
-      // Confirm and delete the time entry
       if (confirm('Are you sure you want to delete this entry?')) {
+        // Confirm and delete the time entry if confirmed
         this.timeEntryService.deleteTimeEntry(id).subscribe(() => {
-          this.timeEntries = this.timeEntries.filter(entry => entry.id !== id); // Remove deleted entry from the list
+          // Refresh the time entries list
+          this.loadTimeEntries(this.selectedPersonId as number);
         });
       }
     } else {
-      console.error('Attempted to delete entry with undefined id');
+      console.error('Attempted to delete entry with undefined id'); 
     }
   }
 }
