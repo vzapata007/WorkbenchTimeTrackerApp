@@ -1,20 +1,8 @@
-<div *ngIf="errorMessage" class="alert alert-danger">
+<div class="list-group">
+    <a href="#" *ngFor="let person of people" class="list-group-item list-group-item-action" (click)="selectPerson(person)">
+        {{ person.fullName }}
+    </a>
+</div>
+<div *ngIf="errorMessage" class="alert alert-danger mt-3">
     {{ errorMessage }}
 </div>
-
-<table class="table">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Full Name</th>
-            <th>Work Tasks</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr *ngFor="let person of people">
-            <td>{{ person.id }}</td>
-            <td>{{ person.fullName }}</td>
-            <td>{{ person.workTasks.length }}</td>
-        </tr>
-    </tbody>
-</table>

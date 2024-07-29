@@ -1,17 +1,27 @@
-<!-- Main Container -->
 <div class="container mt-4">
-    <!-- Time Entries Section -->
-    <h2 class="mb-4">Time Entries</h2>
-    <div *ngIf="timeEntries.length; else noData">
-        <ul class="list-group">
-            <li *ngFor="let entry of timeEntries" class="list-group-item">
-                {{ entry.entryDateTime }} - Person {{ entry.personId }}, Task {{ entry.workTaskId }}
-            </li>
-        </ul>
+    <div class="d-flex justify-content-between mb-3">
+        <h3>Time Entries</h3>
+        <button class="btn btn-sm btn-success" (click)="addEntry()">Add Time Entry</button>
     </div>
-    <ng-template #noData>
-        <div class="alert alert-warning" role="alert">
-            No time entries found.
-        </div>
-    </ng-template>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Person</th>
+                <th>Work Task</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let entry of timeEntries">
+                <td>{{ entry.entryDateTime | date:'short' }}</td>
+                <td>{{ getPersonName(entry.personId) }}</td>
+                <td>{{ getWorkTaskName(entry.workTaskId) }}</td>
+                <td>
+                    <button class="btn btn-sm btn-primary mr-2" (click)="editEntry(entry)">Edit</button>
+                    <button class="btn btn-sm btn-danger" *ngIf="entry.id !== undefined" (click)="deleteEntry(entry.id)">Delete</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
 </div>

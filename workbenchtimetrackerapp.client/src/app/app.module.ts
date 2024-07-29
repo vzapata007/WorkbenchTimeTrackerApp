@@ -1,7 +1,8 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
+import { NgbModule, NgbActiveModal } from '@ng-bootstrap/ng-bootstrap'; 
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -17,6 +18,7 @@ import { PeopleService } from './services/people.service';
 import { TimeEntryService } from './services/time-entry.service';
 import { WorkTaskService } from './services/work-task.service';
 
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -27,14 +29,17 @@ import { WorkTaskService } from './services/work-task.service';
   ],
   imports: [
     BrowserModule,
-    FormsModule, 
+    FormsModule,
+    ReactiveFormsModule,
     HttpClientModule,
-    AppRoutingModule
+    AppRoutingModule,
+    NgbModule 
   ],
   providers: [
     PeopleService,
     TimeEntryService,
-    WorkTaskService
+    WorkTaskService,
+    NgbActiveModal 
   ],
   bootstrap: [AppComponent]
 })

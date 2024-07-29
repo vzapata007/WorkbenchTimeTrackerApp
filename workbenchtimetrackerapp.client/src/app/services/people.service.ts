@@ -7,16 +7,16 @@ import { Person } from '../models/person.model';
   providedIn: 'root'
 })
 export class PeopleService {
-  private apiUrl = '/api/People';
+  private apiUrl = '/api/People'; // URL to the API endpoint for people
 
   constructor(private http: HttpClient) { }
 
-  // Obtiene una lista de personas
+  // Get a list of all people
   getPeople(): Observable<Person[]> {
     return this.http.get<Person[]>(this.apiUrl);
   }
 
-  // Obtiene una persona específica por ID
+  // Get a specific person by their ID
   getPerson(id: number): Observable<Person> {
     return this.http.get<Person>(`${this.apiUrl}/${id}`);
   }

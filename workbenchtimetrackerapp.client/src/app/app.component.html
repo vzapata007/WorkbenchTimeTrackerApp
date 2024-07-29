@@ -1,28 +1,40 @@
-<!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-    <a class="navbar-brand" href="#">Time Tracker</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav">
-            <li class="nav-item">
-                <a class="nav-link text-white" routerLink="/people">People</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-white" routerLink="/work-tasks">Work Tasks</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-white" routerLink="/time-entries">Time Entries</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-white" routerLink="/add-time-entry">Add Time Entry</a>
-            </li>
-        </ul>
-    </div>
-</nav>
-
-<!-- Main Container -->
 <div class="container mt-4">
-    <router-outlet></router-outlet>
+    <header class="my-4 text-center">
+        <h1>Workbench Time Tracker</h1>
+    </header>
+
+    <!-- Person Selector -->
+    <div class="row justify-content-center mb-3">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">People</h5>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <select id="personSelect" class="form-control form-control-lg" (change)="onPersonSelect($event)">
+
+                            <option *ngFor="let person of people" [value]="person.id">
+                                {{ person.fullName }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Time Entries -->
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Time Entries</h5>
+                </div>
+                <div class="card-body p-0">
+                    <app-time-entry-list></app-time-entry-list>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

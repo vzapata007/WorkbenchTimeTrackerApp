@@ -1,15 +1,10 @@
-import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-
-interface Person {
-  id: number;
-  fullName: string;
-}
-
-interface WorkTask {
-  id: number;
-  name: string;
-}
+import { Component, Input, OnInit } from '@angular/core';
+import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { TimeEntry } from '../../models/time-entry.model';
+import { PeopleService } from '../../services/people.service';
+import { WorkTaskService } from '../../services/work-task.service';
+import { Person } from '../../models/person.model';
+import { WorkTask } from '../../models/work-task.model';
 
 @Component({
   selector: 'app-time-entry-form',
@@ -17,52 +12,48 @@ interface WorkTask {
   styleUrls: ['./time-entry-form.component.css']
 })
 export class TimeEntryFormComponent implements OnInit {
-  public people: Person[] = [];
-  public workTasks: WorkTask[] = [];
-  public timeEntry = {
-    entryDateTime: '',
-    personId: null,
-    workTaskId: null
-  };
+  @Input() timeEntry!: TimeEntry;
+  people: Person[] = [];
+  workTasks: WorkTask[] = [];
 
-  constructor(private http: HttpClient) { }
+  constructor(
+    public activeModal: NgbActiveModal,
+    private peopleService: PeopleService,
+    private workTaskService: WorkTaskService
+  ) { }
 
-  ngOnInit() {
-    this.getPeople();
-    this.getWorkTasks();
+  ngOnInit(): void {
+    this.loadPeopleAndTasks();
   }
 
-  getPeople() {
-    this.http.get<Person[]>('/api/People').subscribe(
-      (result) => {
-        this.people = result;
-      },
-      (error) => {
-        console.error('Error fetching people:', error);
-      }
-    );
+  loadPeopleAndTasks(): void {
+    this.peopleService.getPeople().subscribe((people: Person[]) => {
+      this.people = people;
+    });
+
+    this.workTaskService.getWorkTasks().subscribe((tasks: WorkTask[]) => {
+      this.workTasks = tasks;
+      this.initializeForm(); // Initialize form after tasks are loaded
+    });
   }
 
-  getWorkTasks() {
-    this.http.get<WorkTask[]>('/api/WorkTasks').subscribe(
-      (result) => {
-        this.workTasks = result;
-      },
-      (error) => {
-        console.error('Error fetching work tasks:', error);
-      }
-    );
+  initializeForm(): void {
+    // Set the current date and time if not already set
+    if (!this.timeEntry.entryDateTime) {
+      this.timeEntry.entryDateTime = new Date();
+    }
+
+    // Set the first task as default if no task is selected
+    if (this.workTasks.length > 0 && !this.timeEntry.workTaskId) {
+      this.timeEntry.workTaskId = this.workTasks[0].id!;
+    }
   }
 
-  onSubmit() {
-    this.http.post('/api/TimeEntries', this.timeEntry).subscribe(
-      (response) => {
-        console.log('Time entry created:', response);
-        // Optionally reset form or navigate to another view
-      },
-      (error) => {
-        console.error('Error creating time entry:', error);
-      }
-    );
+  save(): void {
+    this.activeModal.close(this.timeEntry);
+  }
+
+  cancel(): void {
+    this.activeModal.dismiss();
   }
 }

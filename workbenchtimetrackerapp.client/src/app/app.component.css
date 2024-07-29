@@ -1,14 +1,35 @@
-﻿:host {
-    max-width: 1280px;
-    padding: 2rem;
-    text-align: center;
+:host {
+  max-width: 1280px;
+  padding: 2rem;
+  text-align: center;
 }
 
-th, td {
-    padding-left: 1rem;
-    padding-right: 1rem;
+.card {
+  margin-bottom: 1rem;
 }
 
-table {
-    margin: 0 auto;
+.card-header {
+  background-color: #f8f9fa;
 }
+
+.card-title {
+  margin-bottom: 0;
+}
+
+.form-group {
+  margin-bottom: 0;
+}
+
+.table {
+  margin-bottom: 0;
+}
+
+#personSelect {
+  font-size: 1.25rem; 
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+}
+
+  #personSelect option {
+    font-size: 1rem; 
+  }

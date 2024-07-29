@@ -1,13 +1,7 @@
-export class TimeEntry {
-  id?: number;
-  entryDateTime: Date;
-  personId: number;
-  workTaskId: number;
-
-  constructor(entryDateTime: Date, personId: number, workTaskId: number, id?: number) {
-    this.entryDateTime = entryDateTime;
-    this.personId = personId;
-    this.workTaskId = workTaskId;
-    this.id = id;
-  }
+// Interface representing a time entry
+export interface TimeEntry {
+  id?: number; 
+  entryDateTime: Date; 
+  personId: number; 
+  workTaskId: number; 
 }

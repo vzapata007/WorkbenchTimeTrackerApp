@@ -1,37 +1,59 @@
-import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
-
-interface WeatherForecast {
-  date: string;
-  temperatureC: number;
-  temperatureF: number;
-  summary: string;
-}
+import { SharedService } from './services/shared.service';
+import { Person } from './models/person.model';
+import { PeopleService } from './services/people.service';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
-  public forecasts: WeatherForecast[] = [];
+  title = 'workbenchtimetrackerapp.client'; 
+  people: Person[] = []; 
+  selectedPerson: Person | null = null; 
 
-  constructor(private http: HttpClient) {}
+  constructor(private peopleService: PeopleService, private sharedService: SharedService) { }
 
   ngOnInit() {
-    this.getForecasts();
+    this.loadPeople(); 
   }
 
-  getForecasts() {
-    this.http.get<WeatherForecast[]>('/weatherforecast').subscribe(
-      (result) => {
-        this.forecasts = result;
+  // Load the list of people from the PeopleService
+  loadPeople() {
+    this.peopleService.getPeople().subscribe(
+      (data) => {
+        this.people = data; 
+        // Select the first person by default if available
+        if (this.people.length > 0) {
+          this.selectPerson(this.people[0].id!);
+        }
       },
       (error) => {
-        console.error(error);
+        console.error('Error fetching people:', error); 
       }
     );
   }
 
-  title = 'workbenchtimetrackerapp.client';
+  // Handle selection change in the dropdown
+  onPersonSelect(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    const personId = Number(target.value);
+    if (!isNaN(personId)) {
+      this.selectPerson(personId); // Select the person with the chosen ID
+    }
+  }
+
+  // Select a person by ID and notify the SharedService
+  selectPerson(personId: number) {
+    this.peopleService.getPerson(personId).subscribe(
+      (person) => {
+        this.selectedPerson = person; 
+        this.sharedService.selectPerson(person); 
+      },
+      (error) => {
+        console.error('Error fetching person:', error); 
+      }
+    );
+  }
 }

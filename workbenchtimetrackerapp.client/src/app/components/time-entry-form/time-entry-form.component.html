@@ -1,30 +1,30 @@
-<div class="container mt-4">
-    <h2>Add Time Entry</h2>
-    <form (ngSubmit)="onSubmit()" #timeEntryForm="ngForm">
-        <div class="form-group">
-            <label for="entryDateTime">Entry Date Time</label>
-            <input type="datetime-local"
-                   id="entryDateTime"
-                   class="form-control"
-                   name="entryDateTime"
-                   [(ngModel)]="timeEntry.entryDateTime"
-                   required />
-        </div>
-
+<div class="modal-header">
+    <h4 class="modal-title">Add/Edit Time Entry</h4>
+    <button type="button" class="close" aria-label="Close" (click)="cancel()">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+<div class="modal-body">
+    <form>
         <div class="form-group">
             <label for="person">Person</label>
-            <select id="person" class="form-control" name="personId" [(ngModel)]="timeEntry.personId" required>
+            <select id="person" class="form-control" [(ngModel)]="timeEntry.personId" name="personId" [disabled]="true">
                 <option *ngFor="let person of people" [value]="person.id">{{ person.fullName }}</option>
             </select>
         </div>
-
         <div class="form-group">
             <label for="workTask">Work Task</label>
-            <select id="workTask" class="form-control" name="workTaskId" [(ngModel)]="timeEntry.workTaskId" required>
+            <select id="workTask" class="form-control" [(ngModel)]="timeEntry.workTaskId" name="workTaskId">
                 <option *ngFor="let task of workTasks" [value]="task.id">{{ task.name }}</option>
             </select>
         </div>
-
-        <button type="submit" class="btn btn-primary">Submit</button>
+        <div class="form-group">
+            <label for="entryDateTime">Entry Date Time</label>
+            <input id="entryDateTime" type="datetime-local" class="form-control" [(ngModel)]="timeEntry.entryDateTime" name="entryDateTime">
+        </div>
     </form>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="cancel()">Cancel</button>
+    <button type="button" class="btn btn-primary" (click)="save()">Save</button>
 </div>
