@@ -1,7 +1,9 @@
 <div class="list-group">
-    <a href="#" *ngFor="let person of people" class="list-group-item list-group-item-action" (click)="selectPerson(person)">
+    <button *ngFor="let person of people"
+            class="list-group-item list-group-item-action"
+            (click)="selectPerson(person)">
         {{ person.fullName }}
-    </a>
+    </button>
 </div>
 <div *ngIf="errorMessage" class="alert alert-danger mt-3">
     {{ errorMessage }}

@@ -12,11 +12,12 @@ namespace WorkbenchTimeTrackerApp.Server.Controllers
     [ApiController]
     public class PeopleController : ControllerBase
     {
-        private readonly IRepository<Person> _personRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public PeopleController(IRepository<Person> personRepository)
+        // Constructor: Injects IUnitOfWork to use for database operations
+        public PeopleController(IUnitOfWork unitOfWork)
         {
-            _personRepository = personRepository;
+            _unitOfWork = unitOfWork;
         }
 
         /// <summary>
@@ -28,7 +29,7 @@ namespace WorkbenchTimeTrackerApp.Server.Controllers
         {
             try
             {
-                var people = await _personRepository.GetAllAsync();
+                var people = await _unitOfWork.Persons.GetAllAsync();
 
                 if (!people.Any())
                 {
@@ -59,7 +60,7 @@ namespace WorkbenchTimeTrackerApp.Server.Controllers
         {
             try
             {
-                var person = await _personRepository.GetByIdAsync(id);
+                var person = await _unitOfWork.Persons.GetByIdAsync(id);
 
                 if (person == null)
                 {

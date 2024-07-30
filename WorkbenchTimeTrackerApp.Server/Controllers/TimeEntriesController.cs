@@ -12,26 +12,24 @@ namespace WorkbenchTimeTrackerApp.Server.Controllers
     [ApiController]
     public class TimeEntriesController : ControllerBase
     {
-        private readonly IRepository<TimeEntry> _timeEntryRepository;
-        private readonly IRepository<Person> _personRepository;
-        private readonly IRepository<WorkTask> _workTaskRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public TimeEntriesController(IRepository<TimeEntry> timeEntryRepository,
-            IRepository<Person> personRepository,
-            IRepository<WorkTask> workTaskRepository)
+        // Constructor: Injects IUnitOfWork to use for database operations
+        public TimeEntriesController(IUnitOfWork unitOfWork)
         {
-            _timeEntryRepository = timeEntryRepository;
-            _personRepository = personRepository;
-            _workTaskRepository = workTaskRepository;
+            _unitOfWork = unitOfWork;
         }
 
-        // GET: api/timeentries
+        /// <summary>
+        /// Retrieves all time entries.
+        /// </summary>
+        /// <returns>List of TimeEntryDTO.</returns>
         [HttpGet]
         public async Task<ActionResult<IEnumerable<TimeEntryDTO>>> GetTimeEntries()
         {
             try
             {
-                var timeEntries = await _timeEntryRepository.GetAllAsync();
+                var timeEntries = await _unitOfWork.TimeEntries.GetAllAsync();
                 var timeEntriesDto = timeEntries.Select(te => new TimeEntryDTO
                 {
                     Id = te.Id,
@@ -44,25 +42,28 @@ namespace WorkbenchTimeTrackerApp.Server.Controllers
             }
             catch (Exception ex)
             {
-                // Manejo de errores
                 return StatusCode(500, new { Message = "An error occurred while retrieving time entries.", Details = ex.Message });
             }
         }
 
-        // GET: api/timeentries/{id}
+        /// <summary>
+        /// Retrieves a specific time entry by ID.
+        /// </summary>
+        /// <param name="id">ID of the time entry.</param>
+        /// <returns>TimeEntryDTO if found, otherwise NotFound.</returns>
         [HttpGet("{id}")]
         public async Task<ActionResult<TimeEntryDTO>> GetTimeEntry(int id)
         {
             try
             {
-                var timeEntry = await _timeEntryRepository.GetByIdAsync(id);
+                var timeEntry = await _unitOfWork.TimeEntries.GetByIdAsync(id);
                 if (timeEntry == null)
                 {
                     return NotFound(new { Message = $"TimeEntry with ID {id} not found." });
                 }
 
-                var person = await _personRepository.GetByIdAsync(timeEntry.PersonId);
-                var workTask = await _workTaskRepository.GetByIdAsync(timeEntry.WorkTaskId);
+                var person = await _unitOfWork.Persons.GetByIdAsync(timeEntry.PersonId);
+                var workTask = await _unitOfWork.WorkTasks.GetByIdAsync(timeEntry.WorkTaskId);
 
                 var timeEntryDto = new TimeEntryDTO
                 {
@@ -78,12 +79,15 @@ namespace WorkbenchTimeTrackerApp.Server.Controllers
             }
             catch (Exception ex)
             {
-                // Manejo de errores
                 return StatusCode(500, new { Message = "An error occurred while retrieving the time entry.", Details = ex.Message });
             }
         }
 
-        // POST: api/timeentries
+        /// <summary>
+        /// Creates a new time entry.
+        /// </summary>
+        /// <param name="timeEntryDto">TimeEntryDTO containing time entry details.</param>
+        /// <returns>The created TimeEntryDTO.</returns>
         [HttpPost]
         public async Task<ActionResult<TimeEntryDTO>> CreateTimeEntry(TimeEntryDTO timeEntryDto)
         {
@@ -96,10 +100,11 @@ namespace WorkbenchTimeTrackerApp.Server.Controllers
                     WorkTaskId = timeEntryDto.WorkTaskId
                 };
 
-                await _timeEntryRepository.AddAsync(timeEntry);
+                await _unitOfWork.TimeEntries.AddAsync(timeEntry);
+                await _unitOfWork.CompleteAsync();
 
-                var person = await _personRepository.GetByIdAsync(timeEntry.PersonId);
-                var workTask = await _workTaskRepository.GetByIdAsync(timeEntry.WorkTaskId);
+                var person = await _unitOfWork.Persons.GetByIdAsync(timeEntry.PersonId);
+                var workTask = await _unitOfWork.WorkTasks.GetByIdAsync(timeEntry.WorkTaskId);
 
                 var result = new TimeEntryDTO
                 {
@@ -115,12 +120,16 @@ namespace WorkbenchTimeTrackerApp.Server.Controllers
             }
             catch (Exception ex)
             {
-                // Manejo de errores
                 return StatusCode(500, new { Message = "An error occurred while creating the time entry.", Details = ex.Message });
             }
         }
 
-        // PUT: api/timeentries/{id}
+        /// <summary>
+        /// Updates an existing time entry.
+        /// </summary>
+        /// <param name="id">ID of the time entry.</param>
+        /// <param name="timeEntryDto">TimeEntryDTO containing updated details.</param>
+        /// <returns>NoContent if update is successful, otherwise error message.</returns>
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateTimeEntry(int id, TimeEntryDTO timeEntryDto)
         {
@@ -131,7 +140,7 @@ namespace WorkbenchTimeTrackerApp.Server.Controllers
                     return BadRequest(new { Message = "ID mismatch." });
                 }
 
-                var timeEntry = await _timeEntryRepository.GetByIdAsync(id);
+                var timeEntry = await _unitOfWork.TimeEntries.GetByIdAsync(id);
                 if (timeEntry == null)
                 {
                     return NotFound(new { Message = $"TimeEntry with ID {id} not found." });
@@ -141,65 +150,68 @@ namespace WorkbenchTimeTrackerApp.Server.Controllers
                 timeEntry.PersonId = timeEntryDto.PersonId;
                 timeEntry.WorkTaskId = timeEntryDto.WorkTaskId;
 
-                await _timeEntryRepository.UpdateAsync(timeEntry);
+                await _unitOfWork.TimeEntries.UpdateAsync(timeEntry);
+                await _unitOfWork.CompleteAsync();
 
                 return NoContent();
             }
             catch (Exception ex)
             {
-                // Manejo de errores
                 return StatusCode(500, new { Message = "An error occurred while updating the time entry.", Details = ex.Message });
             }
         }
 
-        // DELETE: api/timeentries/{id}
+        /// <summary>
+        /// Deletes a specific time entry by ID.
+        /// </summary>
+        /// <param name="id">ID of the time entry.</param>
+        /// <returns>NoContent if deletion is successful, otherwise error message.</returns>
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTimeEntry(int id)
         {
             try
             {
-                var timeEntry = await _timeEntryRepository.GetByIdAsync(id);
+                var timeEntry = await _unitOfWork.TimeEntries.GetByIdAsync(id);
                 if (timeEntry == null)
                 {
                     return NotFound(new { Message = $"TimeEntry with ID {id} not found." });
                 }
 
-                await _timeEntryRepository.DeleteAsync(id);
+                await _unitOfWork.TimeEntries.DeleteAsync(id);
+                await _unitOfWork.CompleteAsync();
 
                 return NoContent();
             }
             catch (Exception ex)
             {
-                // Manejo de errores
                 return StatusCode(500, new { Message = "An error occurred while deleting the time entry.", Details = ex.Message });
             }
         }
 
-        // GET: api/timeentries/person/{personId}
+        /// <summary>
+        /// Retrieves time entries for a specific person by their ID.
+        /// </summary>
+        /// <param name="personId">ID of the person.</param>
+        /// <returns>List of TimeEntryDTO.</returns>
         [HttpGet("person/{personId}")]
         public async Task<ActionResult<IEnumerable<TimeEntryDTO>>> GetTimeEntriesByPersonId(int personId)
         {
             try
             {
-                // Fetch all time entries
-                var timeEntries = await _timeEntryRepository.GetAllAsync();
+                var timeEntries = await _unitOfWork.TimeEntries.GetAllAsync();
 
-                // Filter entries by person ID
                 var filteredEntries = timeEntries
                     .Where(te => te.PersonId == personId)
                     .ToList();
 
-                // Return NotFound if no entries are found
-                if (filteredEntries.Count == 0) 
+                if (filteredEntries.Count == 0)
                 {
                     return NotFound(new { Message = $"No time entries found for Person ID {personId}." });
                 }
 
-                // Fetch related people and work tasks
-                var people = await _personRepository.GetAllAsync();
-                var workTasks = await _workTaskRepository.GetAllAsync();
+                var people = await _unitOfWork.Persons.GetAllAsync();
+                var workTasks = await _unitOfWork.WorkTasks.GetAllAsync();
 
-                // Map filtered entries to DTOs
                 var timeEntriesDto = filteredEntries.Select(entry => new TimeEntryDTO
                 {
                     Id = entry.Id,
@@ -214,7 +226,6 @@ namespace WorkbenchTimeTrackerApp.Server.Controllers
             }
             catch (Exception ex)
             {
-                // Handle errors
                 return StatusCode(500, new { Message = "An error occurred while retrieving time entries by person.", Details = ex.Message });
             }
         }

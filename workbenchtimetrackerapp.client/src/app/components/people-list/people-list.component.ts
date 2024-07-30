@@ -9,34 +9,34 @@ import { SharedService } from '../../services/shared.service';
   styleUrls: ['./people-list.component.css']
 })
 export class PeopleListComponent implements OnInit {
-  people: Person[] = []; // List of people to display
-  errorMessage: string = ''; // Error message for display in case of failure
+  people: Person[] = [];
+  errorMessage: string = '';
 
   constructor(
-    private peopleService: PeopleService, // Service to fetch people data
-    private sharedService: SharedService // Service to communicate selected person
+    private peopleService: PeopleService, // Service for fetching people
+    private sharedService: SharedService // Service for shared state
   ) { }
 
   ngOnInit(): void {
     this.loadPeople(); // Load people when component initializes
   }
 
-  loadPeople(): void {
+  private loadPeople(): void {
     this.peopleService.getPeople().subscribe({
-      next: (data: Person[]) => {
-        this.people = data; // Set the people list with fetched data
-        if (this.people.length > 0) {
-          this.selectPerson(this.people[0]); // Select the first person by default
+      next: (data) => {
+        this.people = data;
+        if (data.length) {
+          this.selectPerson(data[0]); // Default to the first person if available
         }
       },
-      error: (error: any) => {
-        console.error('Error loading people:', error); // Log error to console
-        this.errorMessage = 'Error loading people'; // Set error message for display
+      error: (err) => {
+        console.error('Error loading people:', err);
+        this.errorMessage = 'Error loading people';
       }
     });
   }
 
   selectPerson(person: Person): void {
-    this.sharedService.selectPerson(person); // Notify shared service of the selected person
+    this.sharedService.selectPerson(person); // Notify shared service
   }
 }

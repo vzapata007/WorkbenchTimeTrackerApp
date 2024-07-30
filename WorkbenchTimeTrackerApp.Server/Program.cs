@@ -24,6 +24,9 @@ builder.Services.AddSwaggerGen();
 // Register generic repository service
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
+// Register UnitOfWork service
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
 // Configure CORS to allow requests from Angular frontend
 builder.Services.AddCors(options =>
 {

@@ -12,15 +12,12 @@ namespace WorkbenchTimeTrackerApp.Server.Controllers
     [ApiController]
     public class WorkTasksController : ControllerBase
     {
-        private readonly IRepository<WorkTask> _workTaskRepository;
-        private readonly IRepository<TimeEntry> _timeEntryRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public WorkTasksController(
-            IRepository<WorkTask> workTaskRepository,
-            IRepository<TimeEntry> timeEntryRepository)
+        // Constructor: Injects IUnitOfWork to use for database operations
+        public WorkTasksController(IUnitOfWork unitOfWork)
         {
-            _workTaskRepository = workTaskRepository;
-            _timeEntryRepository = timeEntryRepository;
+            _unitOfWork = unitOfWork;
         }
 
         /// <summary>
@@ -32,14 +29,14 @@ namespace WorkbenchTimeTrackerApp.Server.Controllers
         {
             try
             {
-                var workTasks = await _workTaskRepository.GetAllAsync();
+                var workTasks = await _unitOfWork.WorkTasks.GetAllAsync();
 
                 if (!workTasks.Any())
                 {
                     return NotFound(new { Message = "No work tasks found." });
                 }
 
-                var timeEntries = await _timeEntryRepository.GetAllAsync();
+                var timeEntries = await _unitOfWork.TimeEntries.GetAllAsync();
                 var timeEntriesDictionary = timeEntries
                     .GroupBy(te => te.WorkTaskId)
                     .ToDictionary(group => group.Key, group => group.ToList());
@@ -78,14 +75,14 @@ namespace WorkbenchTimeTrackerApp.Server.Controllers
         {
             try
             {
-                var workTask = await _workTaskRepository.GetByIdAsync(id);
+                var workTask = await _unitOfWork.WorkTasks.GetByIdAsync(id);
 
                 if (workTask == null)
                 {
                     return NotFound(new { Message = $"WorkTask with ID {id} not found." });
                 }
 
-                var timeEntries = await _timeEntryRepository.GetAllAsync();
+                var timeEntries = await _unitOfWork.TimeEntries.GetAllAsync();
                 var filteredTimeEntries = timeEntries
                     .Where(te => te.WorkTaskId == id)
                     .Select(te => new TimeEntryDTO
