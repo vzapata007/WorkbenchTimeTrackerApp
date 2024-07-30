@@ -1,10 +1,11 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { TimeEntry } from '../../models/time-entry.model';
-import { PeopleService } from '../../services/people.service';
-import { WorkTaskService } from '../../services/work-task.service';
 import { Person } from '../../models/person.model';
 import { WorkTask } from '../../models/work-task.model';
+import { PeopleService } from '../../services/people.service';
+import { WorkTaskService } from '../../services/work-task.service';
 
 @Component({
   selector: 'app-time-entry-form',
@@ -12,66 +13,95 @@ import { WorkTask } from '../../models/work-task.model';
   styleUrls: ['./time-entry-form.component.css']
 })
 export class TimeEntryFormComponent implements OnInit {
-  @Input() timeEntry!: TimeEntry; 
-  people: Person[] = []; 
-  workTasks: WorkTask[] = []; 
+  @Input() timeEntry?: TimeEntry; // Optional input for time entry data
+  people: Person[] = []; // List of people  
+  workTasks: WorkTask[] = []; // List of work tasks
+  timeEntryForm: FormGroup; // Reactive form for time entry
+  errorMessage: string = ''; // Error message to display
 
-  constructor(
-    public activeModal: NgbActiveModal, // Service to manage modal interactions
-    private peopleService: PeopleService, // Service to fetch people data
-    private workTaskService: WorkTaskService // Service to fetch work tasks data
-  ) { }
+  constructor(  
+    public activeModal: NgbActiveModal,
+    private peopleService: PeopleService,
+    private workTaskService: WorkTaskService,
+    private fb: FormBuilder
+  ) {
+    // Initialize form with required fields
+    this.timeEntryForm = this.fb.group({
+      personId: [{ value: '', disabled: true }], // personId is read-only
+      workTaskId: ['', Validators.required],
+      entryDateTime: ['', Validators.required]
+    });
+  }
 
   ngOnInit(): void {
-    this.loadPeopleAndTasks(); // Load people and tasks when the component initializes
+    this.loadPeopleAndTasks(); // Load people and tasks on initialization
   }
 
-  loadPeopleAndTasks(): void {
-    // Fetch people data from the service
-    this.peopleService.getPeople().subscribe((people: Person[]) => {
-      this.people = people; 
+  // Load people and work tasks from services
+  private loadPeopleAndTasks(): void {
+    this.peopleService.getPeople().subscribe(people => {
+      this.people = people;
+      this.initializeForm(); // Initialize form with loaded data
     });
 
-    // Fetch work tasks data from the service
-    this.workTaskService.getWorkTasks().subscribe((tasks: WorkTask[]) => {
-      this.workTasks = tasks; 
-      this.initializeForm(); 
+    this.workTaskService.getWorkTasks().subscribe(tasks => {
+      this.workTasks = tasks;
+      this.initializeForm(); // Initialize form with loaded data
     });
   }
 
-  initializeForm(): void {
-    // Set the current date and time if not already set in the timeEntry
-    if (!this.timeEntry.entryDateTime) {
-      this.timeEntry.entryDateTime = new Date(); // Default to current date and time
-    }
-
-    // Set the first work task as default if no task is selected
-    if (this.workTasks.length > 0 && !this.timeEntry.workTaskId) {
-      this.timeEntry.workTaskId = this.workTasks[0].id!; // Set the first available task as default
+  // Initialize form with existing time entry data if available
+  private initializeForm(): void {
+    if (this.timeEntry) {
+      this.timeEntryForm.patchValue({
+        personId: this.timeEntry.personId || '', // Ensure personId is a string
+        workTaskId: this.timeEntry.workTaskId || '', // Ensure workTaskId is a string
+        entryDateTime: this.timeEntry.entryDateTime ? this.formatDateForInput(this.timeEntry.entryDateTime) : this.formatDateForInput(new Date())
+      });
     }
   }
 
+  // Format date to match input type="datetime-local" format
+  private formatDateForInput(date: string | Date): string {
+    return new Date(date).toISOString().slice(0, 16); // Format: yyyy-mm-ddThh:mm
+  }
+
+  // Save form data and close the modal
   save(): void {
-    // Find the selected person and work task based on IDs from the timeEntry
-    const selectedPerson = this.people.find(person => person.id === this.timeEntry.personId);
-    const selectedTask = this.workTasks.find(task => task.id === this.timeEntry.workTaskId);
+    this.errorMessage = '';
 
-    // Update the timeEntry with the full name of the selected person
-    if (selectedPerson) {
-      this.timeEntry.personFullName = selectedPerson.fullName;
+    if (this.timeEntryForm.invalid) {
+      this.timeEntryForm.markAllAsTouched(); // Mark all fields as touched to show validation errors
+
+      // Show specific validation errors
+      const { workTaskId, entryDateTime } = this.timeEntryForm.controls;
+
+      if (workTaskId.invalid) {
+        this.errorMessage = 'Work Task is required.';
+      } else if (entryDateTime.invalid) {
+        this.errorMessage = 'Entry Date Time is required.';
+      }
+
+      return;
     }
 
-    // Update the timeEntry with the name of the selected work task
-    if (selectedTask) {
-      this.timeEntry.workTaskName = selectedTask.name;
-    }
+    const { workTaskId: workTaskIdString, entryDateTime } = this.timeEntryForm.value;
+    const workTaskId = Number(workTaskIdString);
 
-    // Close the modal and pass the updated timeEntry back to the parent component
+
+    // Update time entry with valid form values
+    this.timeEntry = {
+      ...this.timeEntry!,
+      workTaskId,
+      entryDateTime: new Date(entryDateTime) // Ensure entryDateTime is a Date object
+    };
+
+    // Pass updated time entry back to the parent component
     this.activeModal.close(this.timeEntry);
   }
 
+  // Dismiss the modal without saving changes
   cancel(): void {
-    // Dismiss the modal without saving changes
     this.activeModal.dismiss();
   }
 }

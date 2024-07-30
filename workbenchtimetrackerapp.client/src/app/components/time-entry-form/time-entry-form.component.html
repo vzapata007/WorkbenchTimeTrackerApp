@@ -5,26 +5,45 @@
     </button>
 </div>
 <div class="modal-body">
-    <form>
+    <form [formGroup]="timeEntryForm">
+        <!-- Person Dropdown -->
         <div class="form-group">
             <label for="person">Person</label>
-            <select id="person" class="form-control" [(ngModel)]="timeEntry.personId" name="personId" [disabled]="true">
-                <option *ngFor="let person of people" [value]="person.id">{{ person.fullName }}</option>
+            <select id="person" class="form-control" formControlName="personId">
+                <!-- Loop through people and create options -->
+                <option *ngFor="let person of people" [value]="person.id" [selected]="person.id === timeEntry?.personId">
+                    {{ person.fullName }}
+                </option>
             </select>
         </div>
+
+        <!-- Work Task Dropdown -->
         <div class="form-group">
             <label for="workTask">Work Task</label>
-            <select id="workTask" class="form-control" [(ngModel)]="timeEntry.workTaskId" name="workTaskId">
-                <option *ngFor="let task of workTasks" [value]="task.id">{{ task.name }}</option>
+            <select id="workTask" class="form-control" formControlName="workTaskId">
+                <!-- Loop through work tasks and create options -->
+                <option *ngFor="let task of workTasks" [value]="task.id" [selected]="task.id === timeEntry?.workTaskId">
+                    {{ task.name }}
+                </option>
             </select>
         </div>
+
+        <!-- Entry Date Time Input -->
         <div class="form-group">
             <label for="entryDateTime">Entry Date Time</label>
-            <input id="entryDateTime" type="datetime-local" class="form-control" [(ngModel)]="timeEntry.entryDateTime" name="entryDateTime">
+            <input id="entryDateTime" type="datetime-local" class="form-control" formControlName="entryDateTime">
+        </div>
+
+        <!-- Display error messages -->
+        <div *ngIf="errorMessage" class="alert alert-danger mt-3">
+            {{ errorMessage }}
         </div>
     </form>
 </div>
 <div class="modal-footer">
+    <!-- Cancel button to dismiss the modal -->
     <button type="button" class="btn btn-secondary" (click)="cancel()">Cancel</button>
+
+    <!-- Save button to submit the form -->
     <button type="button" class="btn btn-primary" (click)="save()">Save</button>
 </div>
