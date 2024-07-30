@@ -1,18 +1,20 @@
-﻿using WorkbenchTimeTrackerApp.Server.Data;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using WorkbenchTimeTrackerApp.Server.Data;
 
 namespace WorkbenchTimeTrackerApp.Server.Repositories
 {
     public class Repository<T> : IRepository<T> where T : class
     {
         private readonly AppDbContext _context;
+        private readonly DbSet<T> _dbSet;
 
         public Repository(AppDbContext context)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
+            _dbSet = _context.Set<T>();
         }
 
         /// <summary>
@@ -23,7 +25,7 @@ namespace WorkbenchTimeTrackerApp.Server.Repositories
         {
             try
             {
-                return await _context.Set<T>().ToListAsync();
+                return await _dbSet.ToListAsync();
             }
             catch (Exception ex)
             {
@@ -41,8 +43,7 @@ namespace WorkbenchTimeTrackerApp.Server.Repositories
         {
             try
             {
-                // FindAsync can return null if the entity is not found
-                return await _context.Set<T>().FindAsync(id);
+                return await _dbSet.FindAsync(id);
             }
             catch (Exception ex)
             {
@@ -58,14 +59,14 @@ namespace WorkbenchTimeTrackerApp.Server.Repositories
         /// <returns>A task representing the asynchronous operation.</returns>
         public async Task AddAsync(T entity)
         {
-            if (entity is null)
+            if (entity == null)
             {
                 throw new ArgumentNullException(nameof(entity)); // Ensure the entity is not null
             }
 
             try
             {
-                await _context.Set<T>().AddAsync(entity);
+                await _dbSet.AddAsync(entity);
                 await _context.SaveChangesAsync();
             }
             catch (Exception ex)
@@ -82,14 +83,14 @@ namespace WorkbenchTimeTrackerApp.Server.Repositories
         /// <returns>A task representing the asynchronous operation.</returns>
         public async Task UpdateAsync(T entity)
         {
-            if (entity is null)
+            if (entity == null)
             {
                 throw new ArgumentNullException(nameof(entity)); // Ensure the entity is not null
             }
 
             try
             {
-                _context.Set<T>().Update(entity);
+                _context.Entry(entity).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
             }
             catch (Exception ex)
@@ -108,10 +109,10 @@ namespace WorkbenchTimeTrackerApp.Server.Repositories
         {
             try
             {
-                var entity = await _context.Set<T>().FindAsync(id);
+                var entity = await _dbSet.FindAsync(id);
                 if (entity != null)
                 {
-                    _context.Set<T>().Remove(entity);
+                    _dbSet.Remove(entity);
                     await _context.SaveChangesAsync();
                 }
                 else

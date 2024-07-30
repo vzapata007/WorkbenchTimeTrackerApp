@@ -1,11 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using WorkbenchTimeTrackerApp.Server.Data;
 using WorkbenchTimeTrackerApp.Server.DTOs;
 using WorkbenchTimeTrackerApp.Server.Models;
+using WorkbenchTimeTrackerApp.Server.Repositories;
 
 namespace WorkbenchTimeTrackerApp.Server.Controllers
 {
@@ -13,62 +12,72 @@ namespace WorkbenchTimeTrackerApp.Server.Controllers
     [ApiController]
     public class PeopleController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IRepository<Person> _personRepository;
 
-        public PeopleController(AppDbContext context)
+        public PeopleController(IRepository<Person> personRepository)
         {
-            _context = context;
+            _personRepository = personRepository;
         }
 
-        // GET: api/people
+        /// <summary>
+        /// Retrieves all people.
+        /// </summary>
+        /// <returns>List of PersonDTO.</returns>
         [HttpGet]
         public async Task<ActionResult<IEnumerable<PersonDTO>>> GetPeople()
         {
-            var people = await _context.People
-                .Select(p => new PersonDTO
+            try
+            {
+                var people = await _personRepository.GetAllAsync();
+
+                if (!people.Any())
+                {
+                    return NotFound(new { Message = "No people found." });
+                }
+
+                var peopleDto = people.Select(p => new PersonDTO
                 {
                     Id = p.Id,
                     FullName = p.FullName
-                })
-                .ToListAsync();
+                }).ToList();
 
-            return Ok(people);
+                return Ok(peopleDto);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An error occurred while retrieving people.", Details = ex.Message });
+            }
         }
 
-        // GET: api/people/{id}
+        /// <summary>
+        /// Retrieves a specific person by ID.
+        /// </summary>
+        /// <param name="id">ID of the person.</param>
+        /// <returns>PersonDTO if found, otherwise NotFound.</returns>
         [HttpGet("{id}")]
         public async Task<ActionResult<PersonDTO>> GetPerson(int id)
         {
-            var person = await _context.People
-                .Where(p => p.Id == id)
-                .Select(p => new PersonDTO
-                {
-                    Id = p.Id,
-                    FullName = p.FullName,
-                    WorkTasks = p.TimeEntries
-                        .Select(te => new WorkTaskDTO
-                        {
-                            Id = te.WorkTask.Id,
-                            Name = te.WorkTask.Name,
-                            Description = te.WorkTask.Description,
-                            TimeEntries = te.WorkTask.TimeEntries
-                                .Select(t => new TimeEntryDTO
-                                {
-                                    Id = t.Id,
-                                    EntryDateTime = t.EntryDateTime,
-                                    PersonId = t.PersonId,
-                                    WorkTaskId = t.WorkTaskId
-                                }).ToList()
-                        }).ToList()
-                })
-                .FirstOrDefaultAsync();
-
-            if (person == null)
+            try
             {
-                return NotFound(new { Message = $"Person with ID {id} not found." });
-            }
+                var person = await _personRepository.GetByIdAsync(id);
 
-            return Ok(person);
+                if (person == null)
+                {
+                    return NotFound(new { Message = $"Person with ID {id} not found." });
+                }
+
+                var personDto = new PersonDTO
+                {
+                    Id = person.Id,
+                    FullName = person.FullName
+                };
+
+                return Ok(personDto);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An error occurred while retrieving the person.", Details = ex.Message });
+            }
         }
     }
 }

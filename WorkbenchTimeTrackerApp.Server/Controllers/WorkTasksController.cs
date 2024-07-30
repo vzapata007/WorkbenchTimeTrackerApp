@@ -1,11 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using WorkbenchTimeTrackerApp.Server.Data;
-using WorkbenchTimeTrackerApp.Server.DTOs;
-using WorkbenchTimeTrackerApp.Server.Models;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using WorkbenchTimeTrackerApp.Server.DTOs;
+using WorkbenchTimeTrackerApp.Server.Models;
+using WorkbenchTimeTrackerApp.Server.Repositories;
 
 namespace WorkbenchTimeTrackerApp.Server.Controllers
 {
@@ -13,63 +12,105 @@ namespace WorkbenchTimeTrackerApp.Server.Controllers
     [ApiController]
     public class WorkTasksController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IRepository<WorkTask> _workTaskRepository;
+        private readonly IRepository<TimeEntry> _timeEntryRepository;
 
-        public WorkTasksController(AppDbContext context)
+        public WorkTasksController(
+            IRepository<WorkTask> workTaskRepository,
+            IRepository<TimeEntry> timeEntryRepository)
         {
-            _context = context;
+            _workTaskRepository = workTaskRepository;
+            _timeEntryRepository = timeEntryRepository;
         }
 
-        // GET: api/worktasks
+        /// <summary>
+        /// Retrieves all work tasks.
+        /// </summary>
+        /// <returns>List of WorkTaskDTO.</returns>
         [HttpGet]
         public async Task<ActionResult<IEnumerable<WorkTaskDTO>>> GetWorkTasks()
         {
-            var workTasks = await _context.WorkTasks
-                .Select(wt => new WorkTaskDTO
+            try
+            {
+                var workTasks = await _workTaskRepository.GetAllAsync();
+
+                if (!workTasks.Any())
+                {
+                    return NotFound(new { Message = "No work tasks found." });
+                }
+
+                var timeEntries = await _timeEntryRepository.GetAllAsync();
+                var timeEntriesDictionary = timeEntries
+                    .GroupBy(te => te.WorkTaskId)
+                    .ToDictionary(group => group.Key, group => group.ToList());
+
+                var workTasksDto = workTasks.Select(wt => new WorkTaskDTO
                 {
                     Id = wt.Id,
                     Name = wt.Name,
                     Description = wt.Description,
-                    TimeEntries = wt.TimeEntries.Select(te => new TimeEntryDTO
-                    {
-                        Id = te.Id,
-                        EntryDateTime = te.EntryDateTime,
-                        PersonId = te.PersonId,
-                        WorkTaskId = te.WorkTaskId
-                    }).ToList()
-                })
-                .ToListAsync();
+                    TimeEntries = timeEntriesDictionary.TryGetValue(wt.Id, out var entries)
+                        ? entries.Select(te => new TimeEntryDTO
+                        {
+                            Id = te.Id,
+                            EntryDateTime = te.EntryDateTime,
+                            PersonId = te.PersonId,
+                            WorkTaskId = te.WorkTaskId
+                        }).ToList()
+                        : new List<TimeEntryDTO>()
+                }).ToList();
 
-            return Ok(workTasks);
+                return Ok(workTasksDto);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An error occurred while retrieving work tasks.", Details = ex.Message });
+            }
         }
 
-        // GET: api/worktasks/{id}
+        /// <summary>
+        /// Retrieves a specific work task by ID.
+        /// </summary>
+        /// <param name="id">ID of the work task.</param>
+        /// <returns>WorkTaskDTO if found, otherwise NotFound.</returns>
         [HttpGet("{id}")]
         public async Task<ActionResult<WorkTaskDTO>> GetWorkTask(int id)
         {
-            var workTask = await _context.WorkTasks
-                .Where(wt => wt.Id == id)
-                .Select(wt => new WorkTaskDTO
+            try
+            {
+                var workTask = await _workTaskRepository.GetByIdAsync(id);
+
+                if (workTask == null)
                 {
-                    Id = wt.Id,
-                    Name = wt.Name,
-                    Description = wt.Description,
-                    TimeEntries = wt.TimeEntries.Select(te => new TimeEntryDTO
+                    return NotFound(new { Message = $"WorkTask with ID {id} not found." });
+                }
+
+                var timeEntries = await _timeEntryRepository.GetAllAsync();
+                var filteredTimeEntries = timeEntries
+                    .Where(te => te.WorkTaskId == id)
+                    .Select(te => new TimeEntryDTO
                     {
                         Id = te.Id,
                         EntryDateTime = te.EntryDateTime,
                         PersonId = te.PersonId,
                         WorkTaskId = te.WorkTaskId
-                    }).ToList()
-                })
-                .FirstOrDefaultAsync();
+                    })
+                    .ToList();
 
-            if (workTask == null)
-            {
-                return NotFound(new { Message = $"WorkTask with ID {id} not found." });
+                var workTaskDto = new WorkTaskDTO
+                {
+                    Id = workTask.Id,
+                    Name = workTask.Name,
+                    Description = workTask.Description,
+                    TimeEntries = filteredTimeEntries
+                };
+
+                return Ok(workTaskDto);
             }
-
-            return Ok(workTask);
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An error occurred while retrieving the work task.", Details = ex.Message });
+            }
         }
     }
 }

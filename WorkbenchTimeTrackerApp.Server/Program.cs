@@ -5,24 +5,26 @@ using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Add DbContext with SQL Server
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Add controllers with JSON options
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        // Ignore cycles in references
-        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles; 
+        // Ignore reference cycles in JSON serialization
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
     });
 
+// Add Swagger for API documentation
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Add repositories and services
+// Register generic repository service
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
-// Configure CORS
+// Configure CORS to allow requests from Angular frontend
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin",
@@ -36,23 +38,23 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-app.UseDefaultFiles();
-app.UseStaticFiles();
+// Configure middleware
+app.UseHttpsRedirection(); // Redirect HTTP to HTTPS
+app.UseStaticFiles();      // Serve static files (e.g., index.html for SPA)
+app.UseCors("AllowSpecificOrigin"); // Apply CORS policy
+app.UseAuthorization();   // Enable authorization (if needed)
 
-// Configure the HTTP request pipeline.
+// Serve Swagger UI in development
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
-app.UseAuthorization();
-
-// Apply CORS policy
-app.UseCors("AllowSpecificOrigin");
-
+// Map API controllers
 app.MapControllers();
+
+// Serve SPA files
 app.MapFallbackToFile("/index.html");
 
 // Seed the database
