@@ -1,10 +1,10 @@
-/* Ajustar el tamaño del calendario y los campos */
+/* Adjust the size of the calendar and fields */
 input[type="datetime-local"] {
-  max-width: 200px; /* Ajusta según tus necesidades */
+  max-width: 200px; 
 }
 
 select {
-  max-width: 300px; /* Ajusta según tus necesidades */
+  max-width: 300px; 
 }
 
 .form-group {
