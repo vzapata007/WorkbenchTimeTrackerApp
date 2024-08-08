@@ -1,0 +1,350 @@
+openapi: 3.1.0
+info:
+  title: WorkbenchTimeTrackerApp.Server
+  version: '1.0'
+paths:
+  /api/People:
+    get:
+      tags:
+        - People
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PersonDTO'
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PersonDTO'
+            text/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PersonDTO'
+  '/api/People/{id}':
+    get:
+      tags:
+        - People
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/PersonDTO'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonDTO'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/PersonDTO'
+  /api/TimeEntries:
+    get:
+      tags:
+        - TimeEntries
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TimeEntryDTO'
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TimeEntryDTO'
+            text/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TimeEntryDTO'
+    post:
+      tags:
+        - TimeEntries
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TimeEntryDTO'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/TimeEntryDTO'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/TimeEntryDTO'
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/TimeEntryDTO'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimeEntryDTO'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/TimeEntryDTO'
+  '/api/TimeEntries/{id}':
+    get:
+      tags:
+        - TimeEntries
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/TimeEntryDTO'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimeEntryDTO'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/TimeEntryDTO'
+    put:
+      tags:
+        - TimeEntries
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TimeEntryDTO'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/TimeEntryDTO'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/TimeEntryDTO'
+      responses:
+        '200':
+          description: OK
+    delete:
+      tags:
+        - TimeEntries
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: OK
+  '/api/TimeEntries/person/{personId}':
+    get:
+      tags:
+        - TimeEntries
+      parameters:
+        - name: personId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TimeEntryDTO'
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TimeEntryDTO'
+            text/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TimeEntryDTO'
+  /WeatherForecast:
+    get:
+      tags:
+        - WeatherForecast
+      operationId: GetWeatherForecast
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WeatherForecast'
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WeatherForecast'
+            text/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WeatherForecast'
+  /api/WorkTasks:
+    get:
+      tags:
+        - WorkTasks
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WorkTaskDTO'
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WorkTaskDTO'
+            text/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WorkTaskDTO'
+  '/api/WorkTasks/{id}':
+    get:
+      tags:
+        - WorkTasks
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/WorkTaskDTO'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkTaskDTO'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/WorkTaskDTO'
+components:
+  schemas:
+    PersonDTO:
+      required:
+        - fullName
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        fullName:
+          maxLength: 100
+          minLength: 0
+          type: string
+        workTasks:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkTaskDTO'
+          nullable: true
+      additionalProperties: false
+    TimeEntryDTO:
+      required:
+        - entryDateTime
+        - personId
+        - workTaskId
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        entryDateTime:
+          type: string
+          format: date-time
+        personId:
+          type: integer
+          format: int32
+        personFullName:
+          type: string
+          nullable: true
+        workTaskId:
+          type: integer
+          format: int32
+        workTaskName:
+          type: string
+          nullable: true
+      additionalProperties: false
+    WeatherForecast:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        temperatureC:
+          type: integer
+          format: int32
+        temperatureF:
+          type: integer
+          format: int32
+          readOnly: true
+        summary:
+          type: string
+          nullable: true
+      additionalProperties: false
+    WorkTaskDTO:
+      required:
+        - name
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        name:
+          maxLength: 100
+          minLength: 0
+          type: string
+        description:
+          maxLength: 500
+          minLength: 0
+          type: string
+          nullable: true
+        timeEntries:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimeEntryDTO'
+          nullable: true
+      additionalProperties: false

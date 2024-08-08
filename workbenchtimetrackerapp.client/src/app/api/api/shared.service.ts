@@ -1,36 +1,36 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
-import { Person } from '../models/person.model';
-import { TimeEntry } from '../models/time-entry.model';
+import { PersonDTO } from './../model/personDTO';
+import { TimeEntryDTO } from './../model/timeEntryDTO';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SharedService {
-  private selectedPersonSource = new BehaviorSubject<Person | null>(null); // Subject to hold the currently selected person
+  private selectedPersonSource = new BehaviorSubject<PersonDTO | null>(null); // Subject to hold the currently selected person
   selectedPerson$ = this.selectedPersonSource.asObservable(); // Observable to expose the selected person
   private apiUrl = '/api/People'; // URL to the API endpoint for people
 
   constructor(private http: HttpClient) { }
 
   // Set the currently selected person
-  selectPerson(person: Person): void {
+  selectPerson(person: PersonDTO): void {
     this.selectedPersonSource.next(person);
   }
 
   // Get a list of all people
-  getPeople(): Observable<Person[]> {
-    return this.http.get<Person[]>(this.apiUrl);
+  getPeople(): Observable<PersonDTO[]> {
+    return this.http.get<PersonDTO[]>(this.apiUrl);
   }
 
   // Get a specific person by their ID
-  getPerson(id: number): Observable<Person> {
-    return this.http.get<Person>(`${this.apiUrl}/${id}`);
+  getPerson(id: number): Observable<PersonDTO> {
+    return this.http.get<PersonDTO>(`${this.apiUrl}/${id}`);
   }
 
   // Get time entries for a specific person by their ID
-  getTimeEntriesForPerson(personId: number): Observable<TimeEntry[]> {
-    return this.http.get<TimeEntry[]>(`${this.apiUrl}/${personId}/time-entries`);
+  getTimeEntriesForPerson(personId: number): Observable<TimeEntryDTO[]> {
+    return this.http.get<TimeEntryDTO[]>(`${this.apiUrl}/${personId}/time-entries`);
   }
 }

@@ -14,9 +14,9 @@ import { TimeEntryListComponent } from './components/time-entry-list/time-entry-
 import { WorkTaskListComponent } from './components/work-task-list/work-task-list.component';
 
 // Import services
-import { PeopleService } from './services/people.service';
-import { TimeEntryService } from './services/time-entry.service';
-import { WorkTaskService } from './services/work-task.service';
+import { PeopleService } from './api/api/people.service';
+import { TimeEntriesService} from './api/api/timeEntries.service';
+import { WorkTasksService } from './api/api/workTasks.service';
 
 
 @NgModule({
@@ -37,8 +37,8 @@ import { WorkTaskService } from './services/work-task.service';
   ],
   providers: [
     PeopleService,
-    TimeEntryService,
-    WorkTaskService,
+    TimeEntriesService,
+    WorkTasksService,
     NgbActiveModal 
   ],
   bootstrap: [AppComponent]

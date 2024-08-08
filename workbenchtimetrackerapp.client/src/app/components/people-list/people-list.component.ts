@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { PeopleService } from '../../services/people.service';
-import { Person } from '../../models/person.model';
-import { SharedService } from '../../services/shared.service';
+import { PeopleService } from '../../api/api/people.service';
+//import { PeopleService } from '../../services/people.service';
+//import { Person } from '../../models/person.model';
+import { PersonDTO } from '../../api/model/personDTO';
+import { SharedService } from '../../api/api/shared.service';
 
 @Component({
   selector: 'app-people-list',
@@ -9,7 +11,7 @@ import { SharedService } from '../../services/shared.service';
   styleUrls: ['./people-list.component.css']
 })
 export class PeopleListComponent implements OnInit {
-  people: Person[] = [];
+  people: PersonDTO[] = [];
   errorMessage: string = '';
 
   constructor(
@@ -22,7 +24,7 @@ export class PeopleListComponent implements OnInit {
   }
 
   private loadPeople(): void {
-    this.peopleService.getPeople().subscribe({
+    this.peopleService.apiPeopleGet().subscribe({
       next: (data) => {
         this.people = data;
         if (data.length) {
@@ -36,7 +38,7 @@ export class PeopleListComponent implements OnInit {
     });
   }
 
-  selectPerson(person: Person): void {
+  selectPerson(person: PersonDTO): void {
     this.sharedService.selectPerson(person); // Notify shared service
   }
 }

@@ -198,29 +198,27 @@ namespace WorkbenchTimeTrackerApp.Server.Controllers
         {
             try
             {
-                var timeEntries = await _unitOfWork.TimeEntries.GetAllAsync();
+                
+                var timeEntries = await _unitOfWork.TimeEntries.GetAllAsync(
+                    te => te.PersonId == personId,
+                    te => te.Person,  // Include related Person entity
+                    te => te.WorkTask // Include related WorkTask entity
+                );
 
-                var filteredEntries = timeEntries
-                    .Where(te => te.PersonId == personId)
-                    .ToList();
-
-                if (filteredEntries.Count == 0)
-                {
-                    return NotFound(new { Message = $"No time entries found for Person ID {personId}." });
-                }
-
-                var people = await _unitOfWork.Persons.GetAllAsync();
-                var workTasks = await _unitOfWork.WorkTasks.GetAllAsync();
-
-                var timeEntriesDto = filteredEntries.Select(entry => new TimeEntryDTO
+                var timeEntriesDto = timeEntries.Select(entry => new TimeEntryDTO
                 {
                     Id = entry.Id,
                     EntryDateTime = entry.EntryDateTime,
                     PersonId = entry.PersonId,
-                    PersonFullName = people.FirstOrDefault(p => p.Id == entry.PersonId)?.FullName,
+                    PersonFullName = entry.Person.FullName,
                     WorkTaskId = entry.WorkTaskId,
-                    WorkTaskName = workTasks.FirstOrDefault(wt => wt.Id == entry.WorkTaskId)?.Name
+                    WorkTaskName = entry.WorkTask.Name
                 }).ToList();
+
+                if (!timeEntriesDto.Any())
+                {
+                    return NotFound(new { Message = $"No time entries found for Person ID {personId}." });
+                }
 
                 return Ok(timeEntriesDto);
             }

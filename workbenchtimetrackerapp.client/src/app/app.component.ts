@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { SharedService } from './services/shared.service';
-import { Person } from './models/person.model';
-import { PeopleService } from './services/people.service';
+import { PeopleService } from './api/api/people.service';
+import { SharedService } from './api/api/shared.service';
+import { PersonDTO } from './api/model/personDTO';
 
 @Component({
   selector: 'app-root',
@@ -10,7 +10,7 @@ import { PeopleService } from './services/people.service';
 })
 export class AppComponent implements OnInit {
   title = 'Workbench Time Tracker';
-  people: Person[] = [];
+  people: PersonDTO[] = [];
   selectedPersonId: number | null = null;
 
   constructor(
@@ -23,7 +23,7 @@ export class AppComponent implements OnInit {
   }
 
   loadPeople(): void {
-    this.peopleService.getPeople().subscribe({
+    this.peopleService.apiPeopleGet().subscribe({
       next: (people) => {
         this.people = people;
         if (people.length) {
@@ -42,7 +42,7 @@ export class AppComponent implements OnInit {
   }
 
   private selectPerson(personId: number): void {
-    this.peopleService.getPerson(personId).subscribe({
+    this.peopleService.apiPeopleIdGet(personId).subscribe({
       next: (person) => {
         this.selectedPersonId = personId;
         this.sharedService.selectPerson(person); // Update shared service

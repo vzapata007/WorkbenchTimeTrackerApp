@@ -1,11 +1,16 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { TimeEntry } from '../../models/time-entry.model';
-import { Person } from '../../models/person.model';
-import { WorkTask } from '../../models/work-task.model';
-import { PeopleService } from '../../services/people.service';
-import { WorkTaskService } from '../../services/work-task.service';
+//import { TimeEntry } from '../../models/time-entry.model';
+import { TimeEntryDTO } from './../../api/model/timeEntryDTO';
+//import { Person } from '../../models/person.model';
+import { PersonDTO } from './../../api/model/personDTO';
+//import { WorkTask } from '../../models/work-task.model';
+import { WorkTaskDTO } from './../../api/model/workTaskDTO';
+//import { PeopleService } from '../../services/people.service';
+import { PeopleService } from './../../api/api/people.service';
+//import { WorkTaskService } from '../../services/work-task.service';
+import { WorkTasksService } from './../../api/api/workTasks.service';
 
 @Component({
   selector: 'app-time-entry-form',
@@ -13,16 +18,16 @@ import { WorkTaskService } from '../../services/work-task.service';
   styleUrls: ['./time-entry-form.component.css']
 })
 export class TimeEntryFormComponent implements OnInit {
-  @Input() timeEntry?: TimeEntry; // Optional input for time entry data
-  people: Person[] = []; // List of people  
-  workTasks: WorkTask[] = []; // List of work tasks
+  @Input() timeEntry?: TimeEntryDTO; // Optional input for time entry data
+  people: PersonDTO[] = []; // List of people  
+  workTasks: WorkTaskDTO[] = []; // List of work tasks
   timeEntryForm: FormGroup; // Reactive form for time entry
   errorMessage: string = ''; // Error message to display
 
   constructor(  
     public activeModal: NgbActiveModal,
     private peopleService: PeopleService,
-    private workTaskService: WorkTaskService,
+    private workTaskService: WorkTasksService,
     private fb: FormBuilder
   ) {
     // Initialize form with required fields
@@ -39,12 +44,12 @@ export class TimeEntryFormComponent implements OnInit {
 
   // Load people and work tasks from services
   private loadPeopleAndTasks(): void {
-    this.peopleService.getPeople().subscribe(people => {
+    this.peopleService.apiPeopleGet().subscribe(people => {
       this.people = people;
       this.initializeForm(); // Initialize form with loaded data
     });
 
-    this.workTaskService.getWorkTasks().subscribe(tasks => {
+    this.workTaskService.apiWorkTasksGet().subscribe(tasks => {
       this.workTasks = tasks;
       this.initializeForm(); // Initialize form with loaded data
     });
@@ -93,7 +98,7 @@ export class TimeEntryFormComponent implements OnInit {
     this.timeEntry = {
       ...this.timeEntry!,
       workTaskId,
-      entryDateTime: new Date(entryDateTime) // Ensure entryDateTime is a Date object
+      entryDateTime // Ensure entryDateTime is a Date object
     };
 
     // Pass updated time entry back to the parent component

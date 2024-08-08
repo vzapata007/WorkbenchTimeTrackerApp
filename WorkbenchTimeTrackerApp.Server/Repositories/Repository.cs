@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using WorkbenchTimeTrackerApp.Server.Data;
 
@@ -27,10 +29,53 @@ namespace WorkbenchTimeTrackerApp.Server.Repositories
             {
                 return await _dbSet.ToListAsync();
             }
+            catch (DbUpdateException ex)
+            {
+                // Handle database update exceptions specifically
+                throw new InvalidOperationException("An error occurred while retrieving all entities.", ex);
+            }
             catch (Exception ex)
             {
                 // Log or handle the exception as needed
-                throw new Exception("An error occurred while retrieving all entities.", ex);
+                throw new Exception("An unexpected error occurred while retrieving all entities.", ex);
+            }
+        }
+
+        /// <summary>
+        /// Asynchronously retrieves all entities of type T with optional filtering and includes related entities.
+        /// </summary>
+        /// <param name="filter">Optional filter expression to apply.</param>
+        /// <param name="includes">Optional related entities to include.</param>
+        /// <returns>A task representing the asynchronous operation, with a result containing a collection of entities.</returns>
+        public async Task<IEnumerable<T>> GetAllAsync(
+            Expression<Func<T, bool>>? filter = null,
+            params Expression<Func<T, object>>[] includes)
+        {
+            try
+            {
+                IQueryable<T> query = _dbSet;
+
+                if (filter != null)
+                {
+                    query = query.Where(filter);
+                }
+
+                if (includes != null && includes.Length > 0)
+                {
+                    query = includes.Aggregate(query, (current, include) => current.Include(include));
+                }
+
+                return await query.ToListAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                // Handle database update exceptions specifically
+                throw new InvalidOperationException("An error occurred while retrieving filtered entities.", ex);
+            }
+            catch (Exception ex)
+            {
+                // Log or handle the exception as needed
+                throw new Exception("An unexpected error occurred while retrieving filtered entities.", ex);
             }
         }
 
@@ -45,10 +90,15 @@ namespace WorkbenchTimeTrackerApp.Server.Repositories
             {
                 return await _dbSet.FindAsync(id);
             }
+            catch (InvalidOperationException ex)
+            {
+                // Handle cases where the find operation fails
+                throw new KeyNotFoundException($"Entity with ID {id} was not found.", ex);
+            }
             catch (Exception ex)
             {
                 // Log or handle the exception as needed
-                throw new Exception($"An error occurred while retrieving the entity with ID {id}.", ex);
+                throw new Exception($"An unexpected error occurred while retrieving the entity with ID {id}.", ex);
             }
         }
 
@@ -69,10 +119,15 @@ namespace WorkbenchTimeTrackerApp.Server.Repositories
                 await _dbSet.AddAsync(entity);
                 await _context.SaveChangesAsync();
             }
+            catch (DbUpdateException ex)
+            {
+                // Handle database update exceptions specifically
+                throw new InvalidOperationException("An error occurred while adding the entity.", ex);
+            }
             catch (Exception ex)
             {
                 // Log or handle the exception as needed
-                throw new Exception("An error occurred while adding the entity.", ex);
+                throw new Exception("An unexpected error occurred while adding the entity.", ex);
             }
         }
 
@@ -93,10 +148,20 @@ namespace WorkbenchTimeTrackerApp.Server.Repositories
                 _context.Entry(entity).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
             }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                // Handle concurrency issues
+                throw new InvalidOperationException("An error occurred due to a concurrency conflict while updating the entity.", ex);
+            }
+            catch (DbUpdateException ex)
+            {
+                // Handle database update exceptions specifically
+                throw new InvalidOperationException("An error occurred while updating the entity.", ex);
+            }
             catch (Exception ex)
             {
                 // Log or handle the exception as needed
-                throw new Exception("An error occurred while updating the entity.", ex);
+                throw new Exception("An unexpected error occurred while updating the entity.", ex);
             }
         }
 
@@ -120,10 +185,15 @@ namespace WorkbenchTimeTrackerApp.Server.Repositories
                     throw new KeyNotFoundException($"Entity with ID {id} was not found.");
                 }
             }
+            catch (DbUpdateException ex)
+            {
+                // Handle database update exceptions specifically
+                throw new InvalidOperationException($"An error occurred while deleting the entity with ID {id}.", ex);
+            }
             catch (Exception ex)
             {
                 // Log or handle the exception as needed
-                throw new Exception($"An error occurred while deleting the entity with ID {id}.", ex);
+                throw new Exception($"An unexpected error occurred while deleting the entity with ID {id}.", ex);
             }
         }
     }

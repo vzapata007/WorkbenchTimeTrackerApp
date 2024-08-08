@@ -1,9 +1,11 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Subscription } from 'rxjs';
-import { TimeEntry } from '../../models/time-entry.model';
-import { TimeEntryService } from '../../services/time-entry.service';
-import { SharedService } from '../../services/shared.service';
+//import { TimeEntry } from '../../models/time-entry.model';
+import { TimeEntryDTO } from '../../api/model/timeEntryDTO';
+//import { TimeEntryService } from '../../services/time-entry.service';
+import { TimeEntriesService } from '../../api/api/timeEntries.service';
+import { SharedService } from '../../api/api/shared.service';
 import { TimeEntryFormComponent } from '../time-entry-form/time-entry-form.component';
 
 @Component({
@@ -12,12 +14,12 @@ import { TimeEntryFormComponent } from '../time-entry-form/time-entry-form.compo
   styleUrls: ['./time-entry-list.component.css']
 })
 export class TimeEntryListComponent implements OnInit, OnDestroy {
-  timeEntries: TimeEntry[] = []; // List of time entries to display
+  timeEntries: TimeEntryDTO[] = []; // List of time entries to display
   personSubscription: Subscription = new Subscription(); // Subscription to the shared service for person changes
   selectedPersonId: number | null = null; // Currently selected person's ID
 
   constructor(
-    private timeEntryService: TimeEntryService, // Service for time entry operations
+    private timeEntryService: TimeEntriesService, // Service for time entry operations
     private modalService: NgbModal, // Service for handling modals
     private sharedService: SharedService // Service for shared state, including selected person
   ) { }
@@ -42,7 +44,7 @@ export class TimeEntryListComponent implements OnInit, OnDestroy {
 
   loadTimeEntries(personId: number): void {
     // Fetch time entries for the given person ID
-    this.timeEntryService.getTimeEntriesByPersonId(personId).subscribe(entries => {
+    this.timeEntryService.apiTimeEntriesPersonPersonIdGet(personId).subscribe(entries => {
       this.timeEntries = entries; // Update the time entries list
     });
   }
@@ -51,12 +53,12 @@ export class TimeEntryListComponent implements OnInit, OnDestroy {
     if (this.selectedPersonId !== null) {
       // Open the TimeEntryFormComponent modal for adding a new entry
       const modalRef = this.modalService.open(TimeEntryFormComponent);
-      modalRef.componentInstance.timeEntry = { entryDateTime: new Date(), personId: this.selectedPersonId, workTaskId: 0 } as TimeEntry;
+      modalRef.componentInstance.timeEntry = { entryDateTime: new Date().toISOString(), personId: this.selectedPersonId, workTaskId: 0 } as TimeEntryDTO;
 
       modalRef.result.then((result) => {
         if (result) {
           // Add the new time entry if modal result is successful
-          this.timeEntryService.addTimeEntry(result).subscribe((newEntry) => {
+          this.timeEntryService.apiTimeEntriesPost(result).subscribe((newEntry) => {
             // Refresh the time entries list
             this.loadTimeEntries(this.selectedPersonId as number); 
           });
@@ -67,7 +69,7 @@ export class TimeEntryListComponent implements OnInit, OnDestroy {
     }
   }
 
-  editEntry(entry: TimeEntry): void {
+  editEntry(entry: TimeEntryDTO): void {
     // Open the TimeEntryFormComponent modal for editing an existing entry
     const modalRef = this.modalService.open(TimeEntryFormComponent);
     modalRef.componentInstance.timeEntry = { ...entry }; // Pass the entry to edit
@@ -79,7 +81,7 @@ export class TimeEntryListComponent implements OnInit, OnDestroy {
           return;
         }
         // Update the time entry if modal result is successful
-        this.timeEntryService.updateTimeEntry(result).subscribe(() => {
+        this.timeEntryService.apiTimeEntriesIdPut(result).subscribe(() => {
           // Refresh the time entries list
           this.loadTimeEntries(this.selectedPersonId as number); 
         });
@@ -93,7 +95,7 @@ export class TimeEntryListComponent implements OnInit, OnDestroy {
     if (id !== undefined) {
       if (confirm('Are you sure you want to delete this entry?')) {
         // Confirm and delete the time entry if confirmed
-        this.timeEntryService.deleteTimeEntry(id).subscribe(() => {
+        this.timeEntryService.apiTimeEntriesIdDelete(id).subscribe(() => {
           // Refresh the time entries list
           this.loadTimeEntries(this.selectedPersonId as number);
         });

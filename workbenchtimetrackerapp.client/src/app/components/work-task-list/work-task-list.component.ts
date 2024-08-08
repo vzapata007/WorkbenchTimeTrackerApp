@@ -1,8 +1,9 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { SharedService } from '../../services/shared.service';
-import { Person } from '../../models/person.model';
-import { WorkTask } from '../../models/work-task.model';
+import { SharedService } from '../../api/api/shared.service';
+//import { Person } from '../../models/person.model';
+import { PersonDTO } from '../../api/model/personDTO';
+import { WorkTaskDTO } from '../../api/model/workTaskDTO';
 
 @Component({
   selector: 'app-work-task-list',
@@ -10,8 +11,8 @@ import { WorkTask } from '../../models/work-task.model';
   styleUrls: ['./work-task-list.component.css']
 })
 export class WorkTaskListComponent implements OnInit, OnDestroy {
-  person: Person | null = null; // Selected person from the shared service
-  workTasks: WorkTask[] = []; // List of work tasks associated with the selected person
+  person: PersonDTO | null = null; // Selected person from the shared service
+  workTasks: WorkTaskDTO[] = []; // List of work tasks associated with the selected person
   private personSubscription: Subscription = new Subscription(); // Subscription to track person changes
   private workTasksSubscription: Subscription = new Subscription(); // Subscription to track work task changes
 
