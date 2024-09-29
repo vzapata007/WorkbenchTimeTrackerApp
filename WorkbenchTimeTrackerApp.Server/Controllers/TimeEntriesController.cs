@@ -62,20 +62,23 @@ namespace WorkbenchTimeTrackerApp.Server.Controllers
                     return NotFound(new { Message = $"TimeEntry with ID {id} not found." });
                 }
 
-                var person = await _unitOfWork.Persons.GetByIdAsync(timeEntry.PersonId);
-                var workTask = await _unitOfWork.WorkTasks.GetByIdAsync(timeEntry.WorkTaskId);
+                var timeEntries = await _unitOfWork.TimeEntries.GetAllAsync(
+                    te => te.PersonId == timeEntry.PersonId,
+                    te => te.Person,  // Include related Person entity
+                    te => te.WorkTask // Include related WorkTask entity
+                );
 
-                var timeEntryDto = new TimeEntryDTO
+                var timeEntriesDto = timeEntries.Select(entry => new TimeEntryDTO
                 {
-                    Id = timeEntry.Id,
-                    EntryDateTime = timeEntry.EntryDateTime,
-                    PersonId = timeEntry.PersonId,
-                    PersonFullName = person?.FullName,
-                    WorkTaskId = timeEntry.WorkTaskId,
-                    WorkTaskName = workTask?.Name
-                };
+                    Id = entry.Id,
+                    EntryDateTime = entry.EntryDateTime,
+                    PersonId = entry.PersonId,
+                    PersonFullName = entry.Person.FullName,
+                    WorkTaskId = entry.WorkTaskId,
+                    WorkTaskName = entry.WorkTask.Name
+                }).ToList();
 
-                return Ok(timeEntryDto);
+                return Ok(timeEntriesDto);
             }
             catch (Exception ex)
             {
@@ -103,20 +106,24 @@ namespace WorkbenchTimeTrackerApp.Server.Controllers
                 await _unitOfWork.TimeEntries.AddAsync(timeEntry);
                 await _unitOfWork.CompleteAsync();
 
-                var person = await _unitOfWork.Persons.GetByIdAsync(timeEntry.PersonId);
-                var workTask = await _unitOfWork.WorkTasks.GetByIdAsync(timeEntry.WorkTaskId);
+                var timeEntries = await _unitOfWork.TimeEntries.GetAllAsync(
+                    te => te.PersonId == timeEntry.PersonId,
+                    te => te.Person,  // Include related Person entity
+                    te => te.WorkTask // Include related WorkTask entity
+                );
 
-                var result = new TimeEntryDTO
+                var timeEntriesDto = timeEntries.Select(entry => new TimeEntryDTO
                 {
-                    Id = timeEntry.Id,
-                    EntryDateTime = timeEntry.EntryDateTime,
-                    PersonId = timeEntry.PersonId,
-                    PersonFullName = person?.FullName,
-                    WorkTaskId = timeEntry.WorkTaskId,
-                    WorkTaskName = workTask?.Name
-                };
+                    Id = entry.Id,
+                    EntryDateTime = entry.EntryDateTime,
+                    PersonId = entry.PersonId,
+                    PersonFullName = entry.Person.FullName,
+                    WorkTaskId = entry.WorkTaskId,
+                    WorkTaskName = entry.WorkTask.Name
+                }).ToList();
 
-                return CreatedAtAction(nameof(GetTimeEntry), new { id = timeEntry.Id }, result);
+
+                return CreatedAtAction(nameof(GetTimeEntry), new { id = timeEntry.Id }, timeEntriesDto);
             }
             catch (Exception ex)
             {
